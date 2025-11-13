@@ -254,22 +254,29 @@ class _InputDatePickerFormFieldState extends State<InputETDatePickerFormField> {
     final bool useMaterial3 = theme.useMaterial3;
     final Localized localized = Localized(context);
     final DatePickerThemeData datePickerTheme = theme.datePickerTheme;
-    final InputDecorationTheme inputTheme = theme.inputDecorationTheme;
-    final InputBorder effectiveInputBorder =
-        datePickerTheme.inputDecorationTheme?.border ??
-            theme.inputDecorationTheme.border ??
-            (useMaterial3
-                ? const OutlineInputBorder()
-                : const UnderlineInputBorder());
+
+    // ThemeData.inputDecorationTheme is now the *data* type (InputDecorationThemeData?).
+    final InputDecorationThemeData? inputTheme = theme.inputDecorationTheme;
+
+    // Compute an effective border preference from the datePickerTheme first,
+    // then the app theme (both are InputDecorationThemeData?), then fallback.
+    final InputBorder effectiveInputBorder = datePickerTheme.inputDecorationTheme?.border
+        ?? theme.inputDecorationTheme?.border
+        ?? (useMaterial3 ? const OutlineInputBorder() : const UnderlineInputBorder());
+
+    // Merge the app inputTheme and the datePicker overrides in a null-safe way.
+    final InputDecorationThemeData baseInputTheme = inputTheme ?? const InputDecorationThemeData();
+    final InputDecorationThemeData mergedInputTheme = (baseInputTheme
+        .merge(datePickerTheme.inputDecorationTheme ?? const InputDecorationThemeData()))
+        ?? baseInputTheme;
 
     return TextFormField(
       decoration: InputDecoration(
         hintText: widget.fieldHintText ?? localized.dateHelpText,
         labelText: widget.fieldLabelText ?? localized.dateInputLabel,
       ).applyDefaults(
-        inputTheme
-            .merge(datePickerTheme.inputDecorationTheme)
-            .copyWith(border: effectiveInputBorder),
+        // mergedInputTheme is non-null; copyWith to ensure effective border is applied.
+        mergedInputTheme.copyWith(border: effectiveInputBorder),
       ),
       validator: _validateDate,
       keyboardType: widget.keyboardType ?? TextInputType.datetime,
@@ -279,5 +286,6 @@ class _InputDatePickerFormFieldState extends State<InputETDatePickerFormField> {
       controller: _controller,
       focusNode: widget.focusNode,
     );
+
   }
 }
