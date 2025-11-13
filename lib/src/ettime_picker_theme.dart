@@ -489,20 +489,22 @@ class ETTimePickerDefaultsM3 extends ETTimePickerDefaults {
 
   @override
   InputDecorationThemeData? get inputDecorationTheme {
-    // This is NOT correct, but there's no token for
-    // 'time-input.container.shape', so this is using the radius from the shape
-    // for the hour/minute selector. It's a BorderRadiusGeometry, so we have to
-    // resolve it before we can use it.
+    // Safe resolution of border radius
     final selectorRadius = const RoundedRectangleBorder(
       borderRadius: BorderRadius.all(Radius.circular(8)),
-    ).borderRadius.resolve(Directionality.of(context));
+    ).borderRadius?.resolve(Directionality.maybeOf(context) ?? TextDirection.ltr)
+        ?? BorderRadius.circular(8);
+
+    // Resolve hourMinuteColor to a normal Color
+    final resolvedHourMinuteColor =
+    (hourMinuteColor is MaterialStateColor)
+        ? (hourMinuteColor as MaterialStateColor).resolve({})
+        : hourMinuteColor;
 
     return InputDecorationThemeData(
       contentPadding: EdgeInsets.zero,
       filled: true,
-      // This should be derived from a token, but there isn't one for 'time-input'.
-      fillColor: hourMinuteColor,
-      // This should be derived from a token, but there isn't one for 'time-input'.
+      fillColor: resolvedHourMinuteColor,
       focusColor: _colors.primaryContainer,
       enabledBorder: OutlineInputBorder(
         borderRadius: selectorRadius,
@@ -526,6 +528,7 @@ class ETTimePickerDefaultsM3 extends ETTimePickerDefaults {
       errorStyle: const TextStyle(fontSize: 0, height: 0),
     );
   }
+
 
 
   @override
