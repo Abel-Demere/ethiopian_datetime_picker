@@ -2203,8 +2203,12 @@ class _HourMinuteTextFieldState extends State<_HourMinuteTextField>
 
     final inputDecorationTheme = timePickerTheme.inputDecorationTheme ??
         defaultTheme.inputDecorationTheme;
-    var inputDecoration =
-        const InputDecoration().applyDefaults(inputDecorationTheme);
+    InputDecoration inputDecoration;
+    if (inputDecorationTheme != null) {
+      inputDecoration = const InputDecoration().applyDefaults(inputDecorationTheme!);
+    } else {
+      inputDecoration = const InputDecoration();
+    }
     // Remove the hint text when focused because the centered cursor
     // appears odd above the hint text.
     final hintText = focusNode.hasFocus ? null : _formattedValue;
